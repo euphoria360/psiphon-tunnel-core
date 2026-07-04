@@ -1,0 +1,131 @@
+name: Build and Release Psiphon Tunnel Core
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs automatically every day at midnight UTC to check for upstream updates
+  workflow_dispatch: # Allows you to manually trigger the compilation at any time via the UI
+
+jobs:
+  sync:
+    name: Sync Upstream Changes
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.sync.outputs.has_new_commits }}
+    steps:
+      - name: Checkout Fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync with Upstream
+        id: sync
+        uses: aormsby/Fork-Sync-With-Upstream-action@v3.4.1
+        with:
+          target_sync_branch: master
+          target_repo_token: ${{ secrets.GITHUB_TOKEN }}
+          upstream_sync_branch: master
+          upstream_sync_repo: shirokhorshid/psiphon-tunnel-core
+          test_mode: false
+
+  build:
+    name: Build Binaries
+    needs: sync
+    # Run if upstream had changes OR if you triggered it manually
+    if: ${{ needs.sync.outputs.has_changes == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Linux Targets
+          - goos: linux
+            goarch: amd64
+            binary_name: psiphon-tunnel-core-linux-amd64
+          - goos: linux
+            goarch: 386
+            binary_name: psiphon-tunnel-core-linux-386
+          - goos: linux
+            goarch: arm
+            goarm: 7
+            binary_name: psiphon-tunnel-core-linux-armv7
+          - goos: linux
+            goarch: arm64
+            binary_name: psiphon-tunnel-core-linux-arm64
+          - goos: linux
+            goarch: mipsle
+            binary_name: psiphon-tunnel-core-linux-mipsle
+
+          # Windows Targets
+          - goos: windows
+            goarch: amd64
+            binary_name: psiphon-tunnel-core-windows-amd64.exe
+          - goos: windows
+            goarch: 386
+            binary_name: psiphon-tunnel-core-windows-386.exe
+
+          # macOS Targets
+          - goos: darwin
+            goarch: amd64
+            binary_name: psiphon-tunnel-core-darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            binary_name: psiphon-tunnel-core-darwin-arm64
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Build Binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          GOARM: ${{ matrix.goarm }}
+          CGO_ENABLED: 0
+        run: |
+          cd PSD
+          go build -v -ldflags="-s -w" -o ../builds/${{ matrix.binary_name }} .
+
+      - name: Upload Artifacts Intermediary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary_name }}
+          path: builds/${{ matrix.binary_name }}
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: all-builds/
+
+      - name: Consolidate Binaries
+        run: |
+          mkdir final-release
+          find all-builds/ -type f -exec cp {} final-release/ \;
+          ls -la final-release/
+
+      - name: Generate Tag Version
+        id: tag
+        run: echo "release_tag=build-$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_OUTPUT
+
+      - name: Publish Automated Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.release_tag }}
+          name: Psiphon Core Compiled Build (${{ steps.tag.outputs.release_tag }})
+          body: |
+            Automated multi-architecture compilation for psiphon-tunnel-core.
+            Synced automatically from original repository.
+          draft: false
+          prerelease: false
+          files: final-release/*
