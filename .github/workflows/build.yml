@@ -1,4 +1,4 @@
-name: Build and Release Psiphon Tunnel Core
+name: Builds
 
 on:
   schedule:
