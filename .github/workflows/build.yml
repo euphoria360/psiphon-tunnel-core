@@ -40,36 +40,45 @@ jobs:
           # Linux Targets
           - goos: linux
             goarch: amd64
-            binary_name: psiphon-tunnel-core-linux-amd64
+            archive_name: psiphon-tunnel-core-linux-amd64.tar.gz
+            binary_output: psiphon-tunnel-core
           - goos: linux
             goarch: 386
-            binary_name: psiphon-tunnel-core-linux-386
+            archive_name: psiphon-tunnel-core-linux-386.tar.gz
+            binary_output: psiphon-tunnel-core
           - goos: linux
             goarch: arm
             goarm: 7
-            binary_name: psiphon-tunnel-core-linux-armv7
+            archive_name: psiphon-tunnel-core-linux-armv7.tar.gz
+            binary_output: psiphon-tunnel-core
           - goos: linux
             goarch: arm64
-            binary_name: psiphon-tunnel-core-linux-arm64
+            archive_name: psiphon-tunnel-core-linux-arm64.tar.gz
+            binary_output: psiphon-tunnel-core
           - goos: linux
             goarch: mipsle
-            binary_name: psiphon-tunnel-core-linux-mipsle
+            archive_name: psiphon-tunnel-core-linux-mipsle.tar.gz
+            binary_output: psiphon-tunnel-core
 
           # Windows Targets
           - goos: windows
             goarch: amd64
-            binary_name: psiphon-tunnel-core-windows-amd64.exe
+            archive_name: psiphon-tunnel-core-windows-amd64.zip
+            binary_output: psiphon-tunnel-core.exe
           - goos: windows
             goarch: 386
-            binary_name: psiphon-tunnel-core-windows-386.exe
+            archive_name: psiphon-tunnel-core-windows-386.zip
+            binary_output: psiphon-tunnel-core.exe
 
           # macOS Targets
           - goos: darwin
             goarch: amd64
-            binary_name: psiphon-tunnel-core-darwin-amd64
+            archive_name: psiphon-tunnel-core-darwin-amd64.tar.gz
+            binary_output: psiphon-tunnel-core
           - goos: darwin
             goarch: arm64
-            binary_name: psiphon-tunnel-core-darwin-arm64
+            archive_name: psiphon-tunnel-core-darwin-arm64.tar.gz
+            binary_output: psiphon-tunnel-core
 
     steps:
       - name: Checkout Code
@@ -80,21 +89,33 @@ jobs:
         with:
           go-version: 'stable'
 
-      - name: Build Binary
+      - name: Build and Compress Binary
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           GOARM: ${{ matrix.goarm }}
           CGO_ENABLED: 0
         run: |
+          # Create a clean work directory for archiving
+          mkdir -p staging builds
+          
+          # Navigate to core source directory and build
           cd ConsoleClient
-          go build -v -ldflags="-s -w" -o ../builds/${{ matrix.binary_name }} .
+          go build -v -ldflags="-s -w" -o ../staging/${{ matrix.binary_output }} .
+          cd ..
+          
+          # Compress based on file extension matrix configurations
+          if [[ "${{ matrix.archive_name }}" == *.tar.gz ]]; then
+            tar -czvf "builds/${{ matrix.archive_name }}" -C staging ${{ matrix.binary_output }}
+          elif [[ "${{ matrix.archive_name }}" == *.zip ]]; then
+            cd staging && zip "../builds/${{ matrix.archive_name }}" ${{ matrix.binary_output }} && cd ..
+          fi
 
       - name: Upload Artifacts Intermediary
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.binary_name }}
-          path: builds/${{ matrix.binary_name }}
+          name: ${{ matrix.archive_name }}
+          path: builds/${{ matrix.archive_name }}
 
   release:
     name: Create GitHub Release
@@ -125,6 +146,7 @@ jobs:
           name: Psiphon Core Compiled Build (${{ steps.tag.outputs.release_tag }})
           body: |
             Automated multi-architecture compilation for psiphon-tunnel-core.
+            All binaries are packed and compressed (.tar.gz for Linux/macOS, .zip for Windows).
             Synced automatically from original repository.
           draft: false
           prerelease: false
