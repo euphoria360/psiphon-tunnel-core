@@ -134,7 +134,7 @@ Create a configuration file named config.json and adjust paths as necessary:
 ### Key Behavioral Settings Overrides:
 - `"DisableLocalHTTPProxy": true`: Standard local cleartext downstream HTTP proxy bindings are terminated to isolate processing directly to secure socks tunnels.
 - `"LocalSocksProxyPort": 22222`: The daemon provisions an encrypted inbound endpoint locally listening explicitly on SOCKS port 22222.
-- `"LimitTunnelProtocols"`: Restricts execution explicitly to targeted configurations: FRONTED-MEEK-OSSH, FRONTED-MEEK-HTTP-OSSH, and FRONTED-MEEK-QUIC-OSSH.
+- `"LimitTunnelProtocols"`: Restricts execution explicitly to targeted configurations: `FRONTED-MEEK-OSSH`, `FRONTED-MEEK-HTTP-OSSH`, and `FRONTED-MEEK-QUIC-OSSH`.
 - `"UseIndistinguishableTLS": true`: Randomizes outward client hellos and extensions across upstream routing pipelines to circumvent deeper signature-matching engines.
 - `"DataRootDirectory": "/opt/psiphon/data"`: Directs core state databases and certificates to mount onto paths matching stable, system-level file hierarchies.
 
