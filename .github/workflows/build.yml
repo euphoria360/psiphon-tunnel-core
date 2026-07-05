@@ -51,9 +51,6 @@ jobs:
           - goos: linux
             goarch: arm64
             binary_name: psiphon-tunnel-core-linux-arm64
-          - goos: linux
-            goarch: mipsle
-            binary_name: psiphon-tunnel-core-linux-mipsle
 
           # Windows Targets
           - goos: windows
