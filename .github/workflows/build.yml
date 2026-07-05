@@ -60,14 +60,6 @@ jobs:
             goarch: 386
             binary_name: psiphon-tunnel-core-windows-386.exe
 
-          # macOS Targets
-          - goos: darwin
-            goarch: amd64
-            binary_name: psiphon-tunnel-core-darwin-amd64
-          - goos: darwin
-            goarch: arm64
-            binary_name: psiphon-tunnel-core-darwin-arm64
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
