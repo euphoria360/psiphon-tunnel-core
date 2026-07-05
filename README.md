@@ -1,6 +1,8 @@
-[![CI-Build-Pipeline](https://github.com/shirokhorshid/psiphon-tunnel-core/actions/workflows/build.yml/badge.svg)](https://github.com/shirokhorshid/psiphon-tunnel-core/actions/workflows/build.yml)
+[![CI](https://github.com/euphoria360/psiphon-tunnel-core/actions/workflows/build.yml/badge.svg)](https://github.com/euphoria360/psiphon-tunnel-core/actions/workflows/build.yml)
+[![CI](https://github.com/Psiphon-Labs/psiphon-tunnel-core/actions/workflows/tests.yml/badge.svg)](https://github.com/Psiphon-Labs/psiphon-tunnel-core/actions/workflows/tests.yml)
+[![Coverage Status](https://coveralls.io/repos/github/Psiphon-Labs/psiphon-tunnel-core/badge.svg?branch=master)](https://coveralls.io/github/Psiphon-Labs/psiphon-tunnel-core?branch=master)
 
-Psiphon Tunnel Core (Console Client Fork)
+Psiphon Tunnel Core (Euphoria360 Fork)
 ================================================================================
 
 Overview
@@ -42,9 +44,9 @@ cd psiphon-tunnel-core/ConsoleClient
 To compile the console client executable for your current host operating system and CPU architecture, run:
 ```Bash
 CGO_ENABLED=0 go build -v -ldflags="-s -w" -o psiphon-tunnel-core .
-CGO_ENABLED=0: Forces a static binary compilation, eliminating runtime dependencies on shared C libraries (maximizes portability across different Linux distributions).
 ```
-`-ldflags="-s -w"`: Strips debugging information and symbols from the binary, shrinking the executable footprint significantly.
+- `CGO_ENABLED=0`: Forces a static binary compilation, eliminating runtime dependencies on shared C libraries (maximizes portability across different Linux distributions).
+- `-ldflags="-s -w"`: Strips debugging information and symbols from the binary, shrinking the executable footprint significantly.
 
 ### 3. Cross-Compilation Matrix
 Go makes it trivial to cross-compile for other hardware frameworks directly from your terminal.
