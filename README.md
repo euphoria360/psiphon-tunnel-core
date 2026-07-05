@@ -23,7 +23,7 @@ Automated Pre-Compiled Releases
 You do not need to compile this project manually. Automated CI/CD pipelines run every 24 hours to monitor changes, sync with upstream modifications, compile optimizations, and publish compressed binaries.
 
 ### Supported Architectures
-Navigate to the **Releases** tab of this repository to download pre-packed assets. All Linux Builds are compatible with both GLIBC and MUSL, So you can run them on latest Alpine or OpenWRT OS'es too:
+Navigate to the **Releases** tab of this repository to download pre-packed assets. All Linux Builds are compatible with both **GLIBC** and **MUSL**, So you can run them on latest **Alpine** or **OpenWRT** OS'es too:
 * **Linux:** `amd64` (64-bit), `386` (32-bit), `armv7` (Raspberry Pi/ARM), `arm64` (Modern AArch64), `mipsle` (Routers/Embedded)
 * **Windows:** `amd64`, `386`
 * **macOS:** `amd64` (Intel), `arm64` (Apple Silicon M1/M2/M3/M4)
